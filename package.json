@@ -1,0 +1,22 @@
+{
+  "name": "schemish",
+  "version": "0.0.1",
+  "description": "Experimental parser/generator for an experimental language. Only for learning and toying around.",
+  "main": "dist/index.js",
+  "scripts": {
+    "start": "npm run build && node dist/index.js",
+    "build": "tsc",
+    "test": "mocha --recursive --require ts-node/register test/**/*.spec.ts"
+  },
+  "author": "Matt Machuga",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/chai": "^4.2.3",
+    "@types/mocha": "^5.2.7",
+    "@types/node": "^12.7.11",
+    "chai": "^4.2.0",
+    "mocha": "^6.2.1",
+    "ts-node": "^8.4.1",
+    "typescript": "^3.6.3"
+  }
+}

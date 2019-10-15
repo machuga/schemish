@@ -1,10 +1,8 @@
-import { Token, TokenStream } from './types';
+import { Token, TokenStream, Expression } from './types';
 import {Operator} from './tokens';
 
 const createStream = (tokens : Token[]) : TokenStream => {
   let current = 0;
-  const lastTokenIndex = tokens.length - 1;
-
   const peek = (offset = 0) => tokens[current + offset];
   const next = () => {
     const token = peek();
@@ -23,11 +21,11 @@ const createStream = (tokens : Token[]) : TokenStream => {
   };
 };
 
-export const parse = (tokens : Token[]) => {
+export const parse = (tokens : Token[]) : Expression => {
   const { next, isEOF } = createStream(tokens);
 
   const parseArgs = () => {
-    const args = [];
+    const args : Expression[] = [];
 
     // Get the next value
     let current = next();
@@ -36,7 +34,7 @@ export const parse = (tokens : Token[]) => {
       if (current.value === Operator.O_PAREN) {
         args.push(parseForm());
       } else {
-        args.push(current);
+        args.push(<Expression>current);
       }
       current = next();
     }
@@ -47,12 +45,16 @@ export const parse = (tokens : Token[]) => {
     return args;
   };
 
-  const parseForm = () => {
+  const parseForm = () : Expression => {
     // Get rid of the opening paren
     let nameToken = next();
+    if (nameToken.kind !== 'IDENT') {
+      throw new Error('Invalid first argument');
+    }
     const node = {
       kind: 'FUNCTION',
-      name: nameToken.value,
+      name: <string>nameToken.value,
+      value: nameToken.value,
       position: nameToken.position,
       args: parseArgs()
     };

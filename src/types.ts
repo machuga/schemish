@@ -24,5 +24,9 @@ export type Token = {
 };
 
 export type Expression = {
-  name: string
+  name?: string,
+  kind: string,
+  value: string | number,
+  position: PositionInfo,
+  args?: Expression[]
 }

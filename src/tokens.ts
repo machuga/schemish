@@ -1,13 +1,21 @@
-export const operators = new Map([
-  ['(', 'O_PAREN'],
-  [')', 'C_PAREN'],
-  ['"', 'DBL_QUOTE'],
-  ["'", 'SNG_QUOTE'],
+export enum Operator {
+  OpenParen = '(',
+  CloseParen = ')',
+  DoubleQuote = '"',
+  SingleQuote = "'",
+};
+
+export enum OperatorName {
+  OpenParen = 'OpenParen',
+  CloseParen = 'CloseParen',
+  DoubleQuote = 'DoubleQuote',
+  SingleQuote = "SingleQuote",
+};
+
+export const operators: Map<Operator, string> = new Map([
+  [Operator.OpenParen, OperatorName.OpenParen],
+  [Operator.CloseParen, OperatorName.CloseParen],
+  [Operator.DoubleQuote, OperatorName.DoubleQuote],
+  [Operator.SingleQuote, OperatorName.SingleQuote],
 ]);
 
-export enum Operator {
-  O_PAREN   = '(',
-  C_PAREN   = ')',
-  DBL_QUOTE = '"',
-  SNG_QUOTE = "'",
-};

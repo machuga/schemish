@@ -6,7 +6,7 @@ import { createStream } from '../src/input-stream';
 describe('Parser', function() {
   const basicExpression = '(some-func 1 3.14 405 "foo")';
   const nestedExpression = '(some-func 1.4\n  (concat "foo" "bar"))';
-  const arrayExpression = '(some-func 1.4 (1 2 3 4 5))';
+  const arrayExpression = '(some-func 1.4 (list 1 2 3 4 5))';
 
   describe('Parsing a program', function() {
     it('Parses a basic token stream', function() {
@@ -16,10 +16,10 @@ describe('Parser', function() {
 
       expect(ast.name).to.eq('some-func');
       expect(ast.args).to.have.lengthOf(4);
-      expect(ast.args[0].kind).to.eq('INTEGER');
-      expect(ast.args[1].kind).to.eq('FLOAT');
-      expect(ast.args[2].kind).to.eq('INTEGER');
-      expect(ast.args[3].kind).to.eq('STRING');
+      expect(ast.args[0].kind).to.eq('Integer');
+      expect(ast.args[1].kind).to.eq('Float');
+      expect(ast.args[2].kind).to.eq('Integer');
+      expect(ast.args[3].kind).to.eq('String');
     });
 
     it('Parses a nested token stream', function() {
@@ -30,12 +30,12 @@ describe('Parser', function() {
 
       expect(ast.name).to.eq('some-func');
       expect(ast.args).to.have.lengthOf(2);
-      expect(ast.args[0].kind).to.eq('FLOAT');
-      expect(expr.kind).to.eq('FUNCTION');
+      expect(ast.args[0].kind).to.eq('Float');
+      expect(expr.kind).to.eq('Function');
       expect(expr.name).to.eq('concat');
       expect(expr.args).to.have.lengthOf(2);
-      expect(expr.args[0].kind).to.eq('STRING');
-      expect(expr.args[1].kind).to.eq('STRING');
+      expect(expr.args[0].kind).to.eq('String');
+      expect(expr.args[1].kind).to.eq('String');
     });
   });
 });

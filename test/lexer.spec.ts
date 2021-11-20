@@ -14,12 +14,12 @@ describe('Lexer', function() {
 
       //expect(result).to.have.lengthOf(5);
       expect(result.map(token => token.kind)).to.deep.eq([
-        'O_PAREN',
-        'IDENT',
-        'INTEGER',
-        'INTEGER',
-        'INTEGER',
-        'C_PAREN'
+        'OpenParen',
+        'Identifier',
+        'Integer',
+        'Integer',
+        'Integer',
+        'CloseParen'
       ]);
     });
 
@@ -30,21 +30,38 @@ describe('Lexer', function() {
       const result = lex(stream);
 
       expect(result.map(token => token.kind)).to.deep.eq([
-        'O_PAREN',
-        'IDENT',
-        'STRING',
-        'O_PAREN',
-        'IDENT',
-        'STRING',
-        'STRING',
-        'O_PAREN',
-        'IDENT',
-        'O_PAREN',
-        'IDENT',
-        'FLOAT',
-        'INTEGER',
-        'C_PAREN',
-        'C_PAREN'
+        'OpenParen',
+        'Identifier',
+        'String',
+        'OpenParen',
+        'Identifier',
+        'String',
+        'String',
+        'OpenParen',
+        'Identifier',
+        'OpenParen',
+        'Identifier',
+        'Float',
+        'Integer',
+        'CloseParen',
+        'CloseParen'
+      ]);
+    });
+
+    it('tokenizes quoted lists', function() {
+      const stream = createStream("'(1 2 3 4 5)");
+
+      const result = lex(stream);
+
+      expect(result.map(token => token.kind)).to.deep.eq([
+        'SingleQuote',
+        'OpenParen',
+        'Integer',
+        'Integer',
+        'Integer',
+        'Integer',
+        'Integer',
+        'CloseParen',
       ]);
     });
   });

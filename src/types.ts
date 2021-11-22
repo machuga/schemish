@@ -29,4 +29,10 @@ export type Expression = {
   value: string | number,
   position: PositionInfo,
   args?: Expression[]
-}
+};
+
+export type Program = {
+  name: 'Program',
+  body: Expression[],
+  position: PositionInfo,
+};

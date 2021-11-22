@@ -1,4 +1,4 @@
-import { Token, TokenStream, Expression } from './types';
+import { Token, TokenStream, Expression, Program } from './types';
 import { Operator } from './tokens';
 
 const createStream = (tokens: Token[]): TokenStream => {
@@ -21,7 +21,7 @@ const createStream = (tokens: Token[]): TokenStream => {
   };
 };
 
-export const parse = (tokens: Token[]): Expression => {
+export const parse = (tokens: Token[]): Program => {
   const { next, isEOF } = createStream(tokens);
 
   const parseArgs = () => {
@@ -39,8 +39,6 @@ export const parse = (tokens: Token[]): Expression => {
       current = next();
     }
 
-    // Consume the close paren token
-    next();
 
     return args;
   };
@@ -48,11 +46,13 @@ export const parse = (tokens: Token[]): Expression => {
   const parseForm = (): Expression => {
     // Get rid of the opening paren
     let nameToken = next();
+
     if (nameToken.kind !== 'Identifier') {
       throw new Error('Invalid first argument');
     }
+
     const node = {
-      kind: 'Function',
+      kind: 'Call',
       name: <string>nameToken.value,
       value: nameToken.value,
       position: nameToken.position,
@@ -62,12 +62,27 @@ export const parse = (tokens: Token[]): Expression => {
     return node;
   }
 
-  const startToken = next();
+  const nodes: Expression[] = [];
 
-  switch (startToken.value) {
-    case Operator.OpenParen:
-      return parseForm();
-    default:
-      throw new Error('wtf happened');
+  while (!isEOF()) {
+    let token = next();
+
+    switch (token.value) {
+      case Operator.OpenParen:
+        nodes.push(parseForm());
+        break;
+      default:
+        console.error("This is bad", token, token.value === Operator.OpenParen);
+        throw new Error('oh no');
+    }
   }
-};
+
+  return {
+    name: 'Program',
+    body: nodes,
+    position: {
+      line: 0,
+      column: 0,
+    }
+  };
+}

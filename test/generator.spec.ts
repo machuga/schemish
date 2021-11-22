@@ -8,7 +8,6 @@ import { Expression, Program } from '../src/types';
 describe('Generator', function() {
   const basicExpression = '(some-func 1 3.14 405 "foo")';
   const nestedExpression = '(some-func 1.4\n  (concat "foo" "bar"))';
-  const arrayExpression = '(some-func 1.4 (list 1 2 3 4 5))';
 
   const parseExpr = (input: string): Program => parse(lex(createStream(input)));
 
@@ -29,7 +28,24 @@ describe('Generator', function() {
       expect(targetLang).to.eq(`(2 + 3 + (5 / 4))`);
     });
 
-    it('Compiles multiple instructions', function() {
+    it('Compiles equality correctly', function() {
+      const ast = parseExpr('(= 2 3 (/ 5 4))');
+
+      const targetLang = generate(ast);
+
+      expect(targetLang).to.eq(`2 === 3 && 2 === (5 / 4)`);
+    });
+
+    it('Compiles multiple argument comparison correctly', function() {
+      const ast = parseExpr('(> 5 4 (+ 2 3))');
+
+      const targetLang = generate(ast);
+
+      expect(targetLang).to.eq(`5 > 4 && 4 > (2 + 3)`);
+    });
+
+
+    it('Compiles nested instructions', function() {
       const ast = parseExpr(nestedExpression);
 
       const targetLang = generate(ast);

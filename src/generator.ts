@@ -1,4 +1,26 @@
-import { Program, Expression } from './types';
+import { Program, Element, SExpression, Atom } from './types';
+//(define add3 (lambda (x) (+ x 3)))                =>  unspecified
+
+const define = ([nameNode, exprNode]) => {
+  if (nameNode.type !== 'Symbol' && exprNode.type !== 'SExpression') {
+    throw new Error("Invalid parameters for 'define'");
+  }
+
+  return `const ${nameNode.value} = ${lambda(exprNode.elements.slice(1))};`;
+};
+
+const lambda = ([parameters, expr]: [SExpression, SExpression]) => {
+  if (parameters.elements.some(parameter => parameter.type !== 'Symbol')) {
+    throw new Error("Invalid parameters for 'lambda'");
+  }
+
+  return `(${parameters.elements.map((e: Atom) => e.value).join(', ')}) => { return ${generateNode(expr)}; }`
+};
+
+const macros: Map<string, Function> = new Map([
+  ['define', define],
+  ['lambda', lambda],
+]);
 
 const formatFunctionName = (name: string) => name.replace('-', '_');
 
@@ -39,20 +61,43 @@ const operators: Map<string, Function> = new Map([
   ['%', (args: unknown[]) => `(${args.join(' % ')})`],
 ]);
 
-const generateFunctionCall = (node: any) => {
-  if (operators.has(node.name)) {
-    return operators.get(node.name)(node.args.map(generateNode));
+const generateFunctionCall = (node: SExpression) => {
+  const [nameNode, ...args] = node.elements;
+  const name = (nameNode as Atom).value.toString();
+  if (operators.has(name)) {
+    return operators.get(name)(args.map(generateNode));
   }
 
-  return `fn_${formatFunctionName(node.name)}(${node.args.map(generateNode).join(', ')})`;
+  return `fn_${formatFunctionName(name)}(${args.map(generateNode).join(', ')})`;
 };
 
-const generateNode = (node: Expression): string => {
-  switch (node.kind) {
-    case 'Call': return generateFunctionCall(node);
+const compileSExpression = (node: SExpression) => {
+  const [headNode, ...rest] = node.elements;
+
+  if (headNode.type !== 'SExpression') {
+    // Function call or list
+    const symbol = headNode.value.toString();
+
+    if (macros.has(symbol)) {
+      return macros.get(symbol)(rest);
+    }
+
+    if (operators.has(symbol)) {
+      return operators.get(symbol)(rest.map(generateNode));
+    }
+  }
+
+  // SExpression as first element
+
+  return generateFunctionCall(node);
+};
+
+const generateNode = (node: Element): string => {
+  switch (node.type) {
+    case 'SExpression': return compileSExpression(node);
     case 'Integer': return node.value.toString();
     case 'Float': return node.value.toString();
-    case 'Identifier': return node.value.toString();
+    case 'Symbol': return node.value.toString();
     case 'String': return node.value.toString();
     case 'Boolean': return node.value === 't' ? 'true' : 'false';
     default: throw new Error(`Unknown node: ${JSON.stringify(node, null, 2)}`);

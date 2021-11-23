@@ -1,6 +1,7 @@
 import { expect } from 'chai';
 import { lex } from '../src/lexer';
 import { parse } from '../src/parser';
+import { Atom, Element, SExpression } from '../src/types';
 import { createStream } from '../src/input-stream';
 
 describe('Parser', function() {
@@ -19,13 +20,14 @@ describe('Parser', function() {
       const ast = parse(tokens);
 
       const [node] = ast.body;
+      const args: Element[] = (node as SExpression).elements || [];
 
-      expect(node.name).to.eq('some-func');
-      expect(node.args).to.have.lengthOf(4);
-      expect(node.args[0].kind).to.eq('Integer');
-      expect(node.args[1].kind).to.eq('Float');
-      expect(node.args[2].kind).to.eq('Integer');
-      expect(node.args[3].kind).to.eq('String');
+      expect(args).to.have.lengthOf(5);
+      expect((args[0] as Atom).value).to.eq('some-func');
+      expect(args[1].type).to.eq('Integer');
+      expect(args[2].type).to.eq('Float');
+      expect(args[3].type).to.eq('Integer');
+      expect(args[4].type).to.eq('String');
     });
 
     it('Parses a nested token stream', function() {
@@ -34,16 +36,18 @@ describe('Parser', function() {
       const ast = parse(tokens);
       const [node] = ast.body;
 
-      const expr = node.args[1];
+      const args: Element[] = (node as SExpression).elements || [];
+      const nestedExpr = (args[2] as SExpression);
 
-      expect(node.name).to.eq('some-func');
-      expect(node.args).to.have.lengthOf(2);
-      expect(node.args[0].kind).to.eq('Float');
-      expect(expr.kind).to.eq('Call');
-      expect(expr.name).to.eq('concat');
-      expect(expr.args).to.have.lengthOf(2);
-      expect(expr.args[0].kind).to.eq('String');
-      expect(expr.args[1].kind).to.eq('String');
+      expect(args).to.have.lengthOf(3);
+      expect((args[0] as Atom).value).to.eq('some-func');
+      expect(args[1].type).to.eq('Float');
+      expect(args[2].type).to.eq('SExpression');
+
+      expect(nestedExpr.elements).to.have.lengthOf(3);
+      expect((nestedExpr.elements[0] as Atom).value).to.eq('concat');
+      expect(nestedExpr.elements[1].type).to.eq('String');
+      expect(nestedExpr.elements[2].type).to.eq('String');
     });
   });
 });

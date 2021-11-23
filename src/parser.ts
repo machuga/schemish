@@ -1,4 +1,4 @@
-import { Token, TokenStream, Expression, Program } from './types';
+import { Token, TokenStream, Expression, Program, SExpression, Atom, AtomType, Element } from './types';
 import { Operator } from './tokens';
 
 const createStream = (tokens: Token[]): TokenStream => {
@@ -24,17 +24,25 @@ const createStream = (tokens: Token[]): TokenStream => {
 export const parse = (tokens: Token[]): Program => {
   const { next, isEOF } = createStream(tokens);
 
-  const parseArgs = () => {
-    const args: Expression[] = [];
+  const parseAtom = (current: Token): Atom => {
+    return {
+      type: current.kind === 'Identifier' ? 'Symbol' : <AtomType>current.kind,
+      value: current.value,
+      position: current.position,
+    };
+  };
+
+  const parseArgs = (): Element[] => {
+    const args: Element[] = [];
 
     // Get the next value
     let current = next();
 
     while (!isEOF() && current.value !== Operator.CloseParen) {
       if (current.value === Operator.OpenParen) {
-        args.push(parseForm());
+        args.push(parseForm(current));
       } else {
-        args.push(<Expression>current);
+        args.push(parseAtom(current));
       }
       current = next();
     }
@@ -43,33 +51,26 @@ export const parse = (tokens: Token[]): Program => {
     return args;
   };
 
-  const parseForm = (): Expression => {
-    // Get rid of the opening paren
-    let nameToken = next();
+  const parseForm = (openParenToken: Token): SExpression => {
+    // Ignore the opening paren
 
-    if (nameToken.kind !== 'Identifier') {
-      throw new Error('Invalid first argument');
-    }
-
-    const node = {
-      kind: 'Call',
-      name: <string>nameToken.value,
-      value: nameToken.value,
-      position: nameToken.position,
-      args: parseArgs()
+    const node: SExpression = {
+      type: 'SExpression',
+      elements: parseArgs(),
+      position: openParenToken.position,
     };
 
     return node;
   }
 
-  const nodes: Expression[] = [];
+  const nodes: Element[] = [];
 
   while (!isEOF()) {
     let token = next();
 
     switch (token.value) {
       case Operator.OpenParen:
-        nodes.push(parseForm());
+        nodes.push(parseForm(token));
         break;
       default:
         console.error("This is bad", token, token.value === Operator.OpenParen);

@@ -31,8 +31,24 @@ export type Expression = {
   args?: Expression[]
 };
 
-export type Program = {
-  name: 'Program',
-  body: Expression[],
+export type SExpression = {
+  type: 'SExpression',
+  elements: Element[];
   position: PositionInfo,
 };
+
+export type Program = {
+  name: 'Program',
+  body: Element[],
+  position: PositionInfo,
+};
+
+export type Element = Atom | SExpression;
+
+export type AtomType = 'Integer' | 'Float' | 'String' | 'Boolean' | 'Symbol';
+
+export type Atom = {
+  type: AtomType,
+  value: string | number | boolean;
+  position: PositionInfo,
+}
